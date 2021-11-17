@@ -1,4 +1,7 @@
 # AER1216Project
 
-David Test
+## Group Members
+Farhan Wadia
+Shahzeb Mahmood
+David Rolko
 
