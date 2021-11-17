@@ -30,7 +30,7 @@
 clear all
 % compute trim conditions            
 P.Va0 = 15;         % initial airspeed (also used as trim airspeed)
-P.Va_trim = 15; 
+P.Va_trim = 15.00; 
 P.Va = P.Va_trim;
 
 
