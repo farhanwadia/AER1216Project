@@ -1,2 +1,6 @@
 # AER1216Project
-I'm Shahzeb
+
+## Group Members
+Farhan Wadia
+Shahzeb Mahmood
+David Rolko
