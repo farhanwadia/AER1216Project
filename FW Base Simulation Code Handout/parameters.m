@@ -85,32 +85,23 @@ P.Fuel_Cap_L = 5.7;                  % Fuel Capacity in Liters
 
 current_folder = pwd;
 
-Prop_16x8_static_file_location = append(current_folder,'\Propeller Data\16x8 - static.txt');   % make the path to the file
-Prop_16x8_3017_file_location = append(current_folder,'\Propeller Data\16x8 - 3017.txt');   % make the path to the file
-Prop_16x8_3043_file_location = append(current_folder,'\Propeller Data\16x8 - 3043.txt');   % make the path to the file
-Prop_16x8_3967_file_location = append(current_folder,'\Propeller Data\16x8 - 3967.txt');   % make the path to the file
-Prop_16x8_4034_file_location = append(current_folder,'\Propeller Data\16x8 - 4034.txt');   % make the path to the file
-Prop_16x8_4994_file_location = append(current_folder,'\Propeller Data\16x8 - 4994.txt');   % make the path to the file
-Prop_16x8_5027_file_location = append(current_folder,'\Propeller Data\16x8 - 5027.txt');   % make the path to the file
+P.RPM_values = [3017,3043,3967,4034,4994,5027]; % the RPMs which we have data for
+Num_files = length(P.RPM_values);
 
+Prop_16x8_file_Location_static = append(current_folder,'\Propeller Data\16x8 - static.txt');   % make the path to the file
+Prop_16x8_table_static = readtable(Prop_16x8_file_Location_static, 'HeaderLines', 1);      % put the contents of the file into a table
+P.Prop_static = Prop_16x8_table_static{:,:};                                           % convert the table into an array
 
-Prop_16x8_static_table = readtable(Prop_16x8_static_file_location, 'HeaderLines', 1);      % put the contents of the file into a table
-Prop_16x8_3017_table = readtable(Prop_16x8_3017_file_location, 'HeaderLines', 1);      % put the contents of the file into a table
-Prop_16x8_3043_table = readtable(Prop_16x8_3043_file_location, 'HeaderLines', 1);      % put the contents of the file into a table
-Prop_16x8_3967_table = readtable(Prop_16x8_3967_file_location, 'HeaderLines', 1);      % put the contents of the file into a table
-Prop_16x8_4034_table = readtable(Prop_16x8_4034_file_location, 'HeaderLines', 1);      % put the contents of the file into a table
-Prop_16x8_4994_table = readtable(Prop_16x8_4994_file_location, 'HeaderLines', 1);      % put the contents of the file into a table
-Prop_16x8_5027_table = readtable(Prop_16x8_5027_file_location, 'HeaderLines', 1);      % put the contents of the file into a table
+Prop_16x8_file_locations = strings([1,Num_files]);
 
+for i = 1:Num_files   
+    
+    Prop_16x8_file_locations(i) = append(current_folder,'\Propeller Data\16x8 - ', int2str(P.RPM_values(i)), '.txt');   % make the path to the file
+    Prop_16x8_tables{i} = readtable(Prop_16x8_file_locations(i), 'HeaderLines', 1);      % put the contents of the file into a table
+    Array_temp = Prop_16x8_tables{i};  % convert the table into an array
+    P.Props{i} = Array_temp{:,:};  % convert the table into an array
 
-P.Prop_static = Prop_16x8_static_table{:,:};                                           % convert the table into an array
-P.Prop_3017 = Prop_16x8_3017_table{:,:};                                           % convert the table into an array
-P.Prop_3043 = Prop_16x8_3043_table{:,:};                                           % convert the table into an array
-P.Prop_3967 = Prop_16x8_3967_table{:,:};                                           % convert the table into an array
-P.Prop_4034 = Prop_16x8_4034_table{:,:};                                           % convert the table into an array
-P.Prop_4994 = Prop_16x8_4994_table{:,:};                                           % convert the table into an array
-P.Prop_5027 = Prop_16x8_5027_table{:,:};                                           % convert the table into an array
-
+end
 
 % aerodynamic Longitudinal coefficients
 
