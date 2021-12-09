@@ -82,7 +82,7 @@ if verbose_graph
     hold on
     plot(Data_fuel_Power,fuel_comsump_P, 'bo')
     title('Fuel comsumption vs. Power output of the Engine')
-    xlabel('Angular velocity (Power)')
+    xlabel('Engine Output Power (W)')
     ylabel('Fuel comsumption (N/hr)')
     legend('Fitted Curve', 'Provided Data')
     grid on
@@ -116,7 +116,7 @@ if verbose_graph
     plot(P.Props{init_guess_prop_data}(:,1), P.Props{init_guess_prop_data}(:,2),'bo')
     xlim([0 0.8])
     ylim([0 0.1])
-    hold on-*
+    hold on
     plot(Init_CT_J_Curve)
     title("CT vs J curve for the prop at " + title_RPM + " RPM")
     xlabel('J')
