@@ -69,3 +69,66 @@ max_range = t_e_losses_for_max_range * V(min_P_tot_over_V_idx);
 
 sprintf('The flight range is %.2f m', max_range)
 sprintf('The corresponding forward speed is %.2f m/s', V(min_P_tot_over_V_idx))
+%% Question 2
+
+% Roll
+phi_desired = 0;
+
+A_roll = [-4.2683 -3.1716; 4 0];
+B_roll = [2; 0];
+C_roll = [0.7417 0.4405];
+D_roll = 0;
+
+x_roll = [0; 0];
+u_roll = phi_desired;
+
+x_roll_dot = A_roll * x_roll + B_roll * u_roll;
+phi_actual = C_roll * x_roll + D_roll * u_roll;
+
+% Pitch
+theta_desired = 0;
+
+A_pitch = [-3.9784 -2.9796; 4 0];
+B_pitch = [2; 0];
+C_pitch = [1.2569 0.6083];
+D_pitch = 0;
+
+x_pitch = [0; 0];
+u_roll = theta_desired;
+
+x_pitch_dot = A_pitch * x_pitch + B_pitch * u_pitch;
+theta_actual = C_pitch * x_pitch + D_pitch * u_pitch;
+
+% Yaw
+psi_dot_desired = 0;
+
+A_yaw = -0.0059;
+B_yaw = 1;
+C_yaw = 1.2653;
+D_yaw = 0;
+
+x_yaw = [0; 0];
+u_yaw = psi_dot_desired;
+
+x_yaw_dot = A_yaw * x_yaw + B_yaw * u_yaw;
+psi_actual = C_pitch * x_pitch + D_pitch * u_pitch;
+
+% Height
+w_desired = 0;
+
+A_height = [-5.82 -3.6046*exp(1)^-6; 3.8147*exp(1)^-6 0];
+B_height = [1024; 0];
+C_height = [1.4907*exp(1)^-4 1.3191*exp(1)^3];
+D_height = 0;
+
+x_height = [0; 0];
+u_height = w_desired;
+
+x_height_dot = A_height * x_height + B_height * u_height;
+h_actual = C_height * x_height + D_height * u_height;
+
+% Pitch to u
+
+x_dot = -0.6665x
+u_actual = -3.0772 * x + 0 * theta_actual
+
