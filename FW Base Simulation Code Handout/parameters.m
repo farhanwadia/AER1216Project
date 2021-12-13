@@ -68,7 +68,8 @@ P.delta_t0 =0;
                          
 % Aerosonde UAV Geometric Data
 
-P.m = 13.5;                          % UAV weight in kg
+P.m = 13.5;                          % project UAV weight in kg
+% P.m = 36.4;                          % actual UAV in real life weight in kg
 P.Ixx = 0.8244;                      % Moment of inertia in x-axis [kg m^2]
 P.Iyy = 1.135;                       % Moment of inertia in y-axis [kg m^2]
 P.Izz = 1.759;                       % Moment of inertia in z-axis [kg m^2]
@@ -78,7 +79,7 @@ P.b = 2.8956;                        % Span of the wing in m
 P.c = 0.18994;                       % Chord length of the wing in m
 P.Sprop = pi*((16/2)*0.0254)^2;      % Disc area of the prop (in m^2) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! FIX
 P.D=16*0.0254;                       % Prop diameter
-P.e = 0.9;                           % Oswald's efficiency factor ??????????????
+P.e = 0.9;                           % Oswald's efficiency factor
 P.OmegaMax_RPM = 7000;               % Max RPM 
 P.Fuel_Cap_L = 5.7;                  % Fuel Capacity in Liters
 
@@ -86,7 +87,9 @@ P.Fuel_Cap_L = 5.7;                  % Fuel Capacity in Liters
 
 current_folder = pwd;
 
+% P.RPM_values = [3043,4034,5027]; % the RPMs which we have data for
 P.RPM_values = [3017,3043,3967,4034,4994,5027]; % the RPMs which we have data for
+
 Num_files = length(P.RPM_values);
 
 Prop_16x8_file_Location_static = append(current_folder,'\Propeller Data\16x8 - static.txt');   % make the path to the file
@@ -118,7 +121,7 @@ P.C_mq = -3.6;
 P.C_Ldelta_e = -0.36;
 P.C_Ddelta_e_ = 0;
 P.C_mdelta_e_ = -0.5;
-P.C_Epsilon = 0.1592;
+P.C_Epsilon = 0.1592; % tail downwash angle
 
 % aerodynamic Lateral coefficients
 
