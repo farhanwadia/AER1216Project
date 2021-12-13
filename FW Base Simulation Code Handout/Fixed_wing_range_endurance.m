@@ -1,4 +1,3 @@
-
 % AER1216 project
 % David Rolko, Shahzeb Mahmood, Farhan Wadia
 % 1.1 (fixed wing) question 1
@@ -452,7 +451,3 @@ if verbose_minP_T
     T_Pmin = D_Pmin;
     fprintf(' The minimum power required is: %d (N) which occurs when the speed is %d (m/s)\n',T_Pmin,V_Pmin); 
 end
-
-
-
-
