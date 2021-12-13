@@ -40,7 +40,7 @@ function aircraft_dynamics(block)
 % q                 pitch rate [rad/s]
 % r                 yaw rate [rad/s]
 %
-% Last updated: Pravin Wedage 2021-11-09
+% Last updated: Shahzeb Mahmood 2021-12-12
 
 %% TA NOTE
 % The code segements you must modify are located in the derivatives
@@ -257,69 +257,87 @@ function Derivatives(block)
 
 P = block.DialogPrm(1).Data; % must duplicate this line in each function
 
-% Trim conditions and general data
+
+% Aerosonde UAV Data
 
 Va0=P.Va0;
 g=P.g;
-rho=P.rho;
+rho0=1.225;
 
-% Aerosonde UAV Data
+beta0=0;
+alpha0=0;
+
+Prop_R = sqrt(P.Sprop/pi);
+Prop_diam = 2*Prop_R;
+
+Fuel_density = (775.0 + 840.0) / 2; % density of Jet A-1 fuel (kg/m^3)
+%https://code7700.com/fuel_density.htm
+
+Fuel_L = P.Fuel_Cap_L /2 ; % amount of fuel in L -> half a tank
+W_fuel_half = (Fuel_L/1000)*Fuel_density*P.gravity; % weight of gas in N
+
+Weight = (P.m * P.gravity) + W_fuel_half;
+
+AR = P.b/P.c;
+K = 1 / (pi*P.e*AR);
+
+% Trim conditions and general data
+
+dyn_pressure = (1/2)*rho0*(Va0)^2;
+CL = Weight / (dyn_pressure*P.S);
+CD = P.C_Do + K*CL^2;
 
 % physical parameters of airframe
 
 m=P.m;
-Ixx=P.I_xx;
-Iyy=P.I_yy;
-Izz=P.I_zz;
-Ixz=P.I_xz;
+Ixx=P.Ixx;
+Iyy=P.Iyy;
+Izz=P.Izz;
+Ixz=P.Ixz;
 S=P.S;
 b=P.b;
 c=P.c;
-Sprop=P.S_prop;
+Sprop=P.Sprop;
 e=P.e;
-Omega_max=P.Omega_max; % rad/s
-FuelCapacity=P.FuelCapacity; % L
-
-kmotor=P.k_motor;
-kTp=P.k_T_p;
-Cprop=P.C_prop;
+Omega_max=P.OmegaMax_RPM; % rad/s
+FuelCapacity=P.Fuel_Cap_L; % L
 
 % Longitudinal
 
-CL0=P.C_L_0;
-CD0=P.C_D_0;
-Cm0=P.C_m_0;
-CLalpha=P.C_L_alpha;
-CDalpha=P.C_D_alpha;
-Cmalpha=P.C_m_alpha;
-CLq=P.C_L_q;
-CDq=P.C_D_q;
-Cmq=P.C_m_q;
-CLdelta_e=P.C_L_delta_e;
-CDdelta_e=P.C_D_delta_e;
-Cmdelta_e=P.C_m_delta_e;
-epsilon=P.epsilon;
+Cl0=P.C_Lo;
+CD0=P.C_Do;
+Cm0=P.C_mo;
+Clalpha=P.C_Lalpha;
+CDalpha=P.C_Dalpha;
+Cmalpha=P.C_malpha;
+Clq=P.C_Lq;
+CDq=P.C_Dq;
+Cmq=P.C_mq;
+Cldelta_e=P.C_Ldelta_e;
+CDdelta_e=P.C_Ddelta_e_;
+Cmdelta_e=P.C_mdelta_e_;
+epsilon=P.C_Epsilon;
 
 % Lateral
 
-CY0=P.C_Y_0;
-CL0=P.C_l_0;
-Cn0=P.C_n_0;
-CYbeta=P.C_Y_beta;
-Clbeta=P.C_l_beta;
-Cnbeta=P.C_n_beta;
-CYp=P.C_Y_p;
-Clp=P.C_l_p;
-Cnp=P.C_n_p;
-CYr=P.C_Y_r;
-Clr=P.C_l_r;
-Cnr=P.C_n_r;
-Cydelta_a=P.C_Y_delta_a;
-Cldelta_a=P.C_l_delta_a;
-Cndelta_a=P.C_n_delta_a;
-CYdelta_r=P.C_Y_delta_r;
-Cldelta_r=P.C_l_delta_r;
-Cndelta_r=P.C_n_delta_r;
+CY0=P.C_Yo;
+Cl0=P.C_lo;
+Cn0=P.C_no;
+CYbeta=P.C_Ybeta;
+Clbeta=P.C_lbeta;
+Cnbeta=P.C_nbeta;
+CYp=P.C_Yp;
+Clp=P.C_lp;
+Cnp=P.C_np;
+CYr=P.C_Yr;
+Clr=P.C_lr;
+Cnr=P.C_nr;
+CYdelta_a=P.C_Ydelta_a;
+Cldelta_a=P.C_ldelta_a;
+Cndelta_a=P.C_ndelta_a;
+CYdelta_r=P.C_Ydelta_r;
+Cldelta_r=P.C_ldelta_r;
+Cndelta_r=P.C_ndelta_r;
 
 % compute inertial constants
 
@@ -333,7 +351,50 @@ k6 = Ixz/Iyy;
 k7 = ((Ixx-Iyy)*Ixx+Ixz^2)/K;
 k8 = Ixx/K;
 
-% map states and inputs
+% aerodynamic coefficients
+
+Cp0=k3*Cl0+k4*Cn0;
+Cpbeta=k3*Clbeta+k4*Cnbeta;
+Cpp=k3*Clp+k4*Cnp;
+Cpr=k3*Clr+k4*Cnr;
+Cpdelta_a=k3*Cldelta_a+k4*Cndelta_a;
+Cpdelta_r=k3*Cldelta_r+k4*Cndelta_r;
+Cr0=k4*Cl0+k8*Cn0;
+Crbeta=k4*Clbeta+k8*Cnbeta;
+Crp=k4*Clp+k8*Cnp;
+Crr=k4*Clr+k8*Cnr;
+Crdelta_a=k4*Cldelta_a+k8*Cndelta_a;
+Crdelta_r=k4*Cldelta_r+k8*Cndelta_r;
+
+CX0=-CD*cos(alpha0)+CL*sin(alpha0);
+CXalpha=CX0;  % ???
+CXq=-CDq*cos(alpha0)+Clq*sin(alpha0);
+CXdelta_e=-CDdelta_e*cos(alpha0)+Cldelta_e*sin(alpha0);
+CZ0=-CD*sin(alpha0)-CL*cos(alpha0);
+CZalpha=CZ0; % ???
+CZq=-CDq*sin(alpha0)-Clq*cos(alpha0);
+CZdelta_e=-CDdelta_e*sin(alpha0)-Cldelta_e*cos(alpha0);
+
+% Initial Conditions
+
+pn0=P.pn0;
+pe0=P.pe0;
+pd0=P.pd0;
+u0=P.u0;
+v0=P.v0;
+w0=P.w0;
+phi0=P.phi0;
+theta0=P.theta0;
+psi0=P.psi0;
+p0=P.p0;
+q0=P.q0;
+r0=P.r0;
+delta_e0=P.delta_e0;
+delta_a0=P.delta_a0;
+delta_r0=P.delta_r0;
+delta_t0=P.delta_t0;
+
+% States
 
 pn    = block.ContStates.Data(1);
 pe    = block.ContStates.Data(2);
@@ -352,90 +413,160 @@ delta_a = block.InputPort(1).Data(2)*pi/180 ; % converted inputs to radians
 delta_r = block.InputPort(1).Data(3)*pi/180 ; % converted inputs to radians
 delta_t = block.InputPort(1).Data(4);
 
-% Air Data
+% Calculate air density
 
+h=-pd;
 Va = sqrt(u^2+v^2+w^2);
 alpha = atan(w/u);
 beta = asin(v/Va);
+Velocities=Va;
 
-% rotation matrix
+if h < 11000
+    % Use this if below 11km (in the troposphere)
+    Temperature = 15.04 - .00649 * h;
+    Pressure = 101.29 * [(Temperature + 273.1)/288.08]^5.256;       
+else
+    % Use this if between 11km and 25km (entering lower stratosphere)
+    Temperature = -56.46;
+    Pressure = 22.65 * exp(1.73 - .000157 * Temperature);
+end
 
-C_bv=[cos(theta)*cos(psi) cos(theta)*sin(psi) -sin(theta);...
-    sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi) sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi) sin(phi)*cos(theta);...
-    cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi) cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi) cos(phi)*cos(theta)];
+% propulsion forces and moments
 
-% aerodynamic coefficients 
+rho = Pressure / (0.2869 * (Temperature + 273.1));
 
-% compute the nondimensional aerodynamic coefficients here
+Fuel_density = (775.0 + 840.0) / 2; % density of Jet A-1 fuel (kg/m^3)
+%https://code7700.com/fuel_density.htm
+
+Fuel_L = P.Fuel_Cap_L /2 ; % amount of fuel in L -> half a tank
+W_fuel_half = (Fuel_L/1000)*Fuel_density*P.gravity; % weight of gas in N
+
+Weight = (P.m * P.gravity) + W_fuel_half;
+
+syms J_variable CT_variable 'real'
+
+CT_J_Curve = fit(P.Props{3}(:,1), P.Props{3}(:,2),'poly2');
+CT_J_Curve_f(J_variable) = CT_J_Curve.p1*(J_variable)^2 + CT_J_Curve.p2*(J_variable) + CT_J_Curve.p3;
+
+CP_J_Curve = fit(P.Props{3}(:,1), P.Props{3}(:,3),'exp2');
+CP_J_Curve_f(J_variable) = CP_J_Curve.a*exp(CP_J_Curve.b*J_variable) + CP_J_Curve.c*exp(CP_J_Curve.d*J_variable);
+
+AR = P.b/P.c;
+K = 1 / (pi*P.e*AR);
+
+dyn_pressure2 = (1/2)*rho*(Velocities)^2;
+CL = Weight / (dyn_pressure2*P.S);
+CD = P.C_Do + K*CL^2;
+Thrust_Req = Weight / (CL / CD);
+
+eqn1 = [CT_variable == CT_J_Curve_f(J_variable)];
+eqn2 = [CT_variable == Thrust_Req / (rho * (Velocities / (Prop_diam * (J_variable)))^2 * Prop_diam^4)];
+eqns = [eqn1(1) eqn2(1)];
+vars = [CT_variable J_variable]; 
+
+[Init_Ct_temp Init_J_temp] = vpasolve(eqns,vars,[0.05; 0.5]);
+Init_J = double(max(Init_J_temp));
+
+Rev_sec = Velocities / (Prop_diam * Init_J);
+RPM = Rev_sec*60; 
+
+CT=Init_Ct_temp(1);
+CP = CP_J_Curve_f(Init_J);
+Power = CP * rho*Rev_sec^3*Prop_diam^5;
+Power = double(Power);
+
+% compute the propulsion forces and moments here
+
+fp=CT*rho*Rev_sec^2*Prop_diam^4;
+
+CQ=CP/(2*pi);
+Mp=CQ*rho*Rev_sec^2*Prop_diam^5;
 
 % aerodynamic forces and moments
-
 % compute the aerodynamic forces and moments here
 
 % Longitudinal aerodynamic forces and moments
 
-F_lift=(1/2)*rho*Va^2*S*(CL0+CLalpha*alpha+CLq*(c/(2*Va))*q+CLdelta_e*delta_e);
-F_drag=(1/2)*rho*Va^2*S*(CD0+CDalpha*alpha+CDq*(c/(2*Va))*q+CDdelta_e*delta_e);
+Xu=(u0*rho*S)/m*(CX0+CXalpha*alpha0+CXdelta_e*delta_e0)-(rho*S*w0*CXalpha)/(2*m)+(rho*S*c*CXq*u0*q0)/(4*m*Va0)-(rho*Sprop*u0)/m;
+Xw=-q0+(w0*rho*S)/m*(CX0+CXalpha*alpha0+CXdelta_e*delta_e0)+(rho*S*c*CXq*w0*q0)/(4*m*Va0)+(rho*S*CXalpha*u0)/(2*m)-(rho*Sprop*w0)/m;
+Xq=-w0+(rho*Va0*S*CXq*c)/(4*m);
+Xdelta_e=(rho*Va0^2*S*CXdelta_e)/(2*m);
+Xdelta_t=(rho*Sprop*delta_t0^2)/m;
 
-fx=-F_drag*cos(alpha)+F_lift*sin(alpha);
-fz=-F_drag*sin(alpha)-F_lift*co(alpha);
+Zu=q0+(u0*rho*S)/m*(CZ0+CZalpha*alpha0+CZdelta_e*delta_e0)-(rho*S*w0*CZalpha)/(2*m)+(rho*S*c*CZq*u0*q0)/(4*m*Va0);
+Zw=(w0*rho*S)/m*(CZ0+CZalpha*alpha0+CZdelta_e*delta_e0)+(rho*S*c*CZq*w0*q0)/(4*m*Va0)+(rho*S*CZalpha*u0)/(2*m);
+Zq=u0+(rho*Va0*S*CZq*c)/(4*m);
+Zdelta_e=(rho*Va0^2*S*CZdelta_e)/(2*m);
 
-M=(1/2)*rho*Va^2*S*c*(Cm0+Cmalpha*alpha+Cmq*(c/(2*Va))*q+Cmdelta_e*delta_e);
+Mu=(u0*rho*S*c)/Iyy*(Cm0+Cmalpha*alpha0+Cmdelta_e*delta_e0)+(rho*S*c*Cmalpha*w0)/(2*Iyy)+(rho*S*c^2*Cmq*q0*u0)/(4*Iyy*Va0);
+Mw=(w0*rho*S*c)/Iyy*(Cm0+Cmalpha*alpha0+Cmdelta_e*delta_e0)+(rho*S*c*Cmalpha*u0)/(2*Iyy)+(rho*S*c^2*Cmq*q0*w0)/(4*Iyy*Va0);
+Mq=(rho*Va0*S*c^2*Cmq)/(4*Iyy);
+Mdelta_e=(rho*Va0*2*S*c*Cmdelta_e)/(2*Iyy);
 
 % Lateral aerodynamic forces and moments
 
-fy=(1/2)*rho*Va^2*S*(CY0+CYbeta*beta+CYp*(b/(2*Va))*p+CYr*(b/(2*Va))*r+CYdelta_a*delta_e+CYdelta_r*delta_r);
-l=(1/2)*rho*Va^2*S*b*(Cl0+Clbeta*beta+Clp*(b/(2*Va))*p+Clr*(b/(2*Va))*r+Cldelta_a*delta_e+Cldelta_r*delta_r);
-n=(1/2)*rho*Va^2*S*b*(Cn0+Cnbeta*beta+Cnp*(b/(2*Va))*p+Cnr*(b/(2*Va))*r+Cndelta_a*delta_a+Cndelta_r*delta_r);
+Yv=(rho*S*b*v0)/(4*m*Va0)*(CYp*p0+CYr*r0)+(rho*S*v0)/m*(CY0+CYbeta*beta0+CYdelta_a*delta_a0+CYdelta_r*delta_r0)+(rho*S*CYbeta)/(2*m)*sqrt(u0^2+w0^2);
+Yp=w0+(rho*Va0*S*b)/(4*m)*CYp;
+Yr=-u0+(rho*Va0*S*b)/(4*m)*CYdelta_r;
+Ydelta_a=(rho*Va0^2*S)/(2*m)*CYdelta_a;
+Ydelta_r=(rho*Va0^2*S)/(2*m)*CYdelta_r;
 
-% propulsion forces and moments
+Lv=(rho*S*b^2*v0^2)/(4*Va0)*(Cpp*p0+Cpr*r0)+rho*S*b*v0*(Cp0+Cpbeta*beta0+Cpdelta_a*delta_a0+Cpdelta_r*delta_r0)+(rho*S*b*Cpbeta)/2*sqrt(u0^2+v0^2);
+Lp=k1*q0+(rho*Va0*S*b^2)/4*Cpp;
+Lr=-k2*q0+(rho*Va0*S*b^2)/4*Cpr;
+Ldelta_a=(rho*Va0^2*S*b)/2*Cpdelta_a;
+Ldelta_r=(rho*Va0^2*S*b)/2*Cpdelta_r;
 
-% compute the propulsion forces and moments here
+Nv=(rho*S*b^2*v0^2)/(4*Va0)*(Crp*p0+Crr*r0)+rho*S*b*v0*(Cr0+Crbeta*beta0+Crdelta_a*delta_a0+Crdelta_r*delta_r0)+(rho*S*b*Crbeta)/2*sqrt(u0^2+v0^2);
+Np=k7*q0+(rho*Va0*S*b^2)/4*Crp;
+Nr=-k1*q0+(rho*Va0*S*b^2)/4*Crr;
+Ndelta_a=(rho*Va0^2*S*b)/2*Crdelta_a;
+Ndelta_r=(rho*Va0^2*S*b)/2*Crdelta_r;
 
-fp=(1/2)*rho*Sprop*Cprop*[(kmotor*delta_t)^2-Va^2; 0; 0];
+% Longitudinal Model
 
-Mp=[-kTp*(Omega_max)^2; 0; 0];
+A_long=[Xu Xw Xq -g*cos(theta0) 0;...
+    Zu Zw Zq -g*sin(theta0) 0;...
+    Mu Mw Mq 0 0;
+    0 0 1 0 0;
+    sin(theta0) -cos(theta0) 0 u0*cos(theta0)+w0*sin(theta0) 0];
 
-% gravity
+B_long=[Xdelta_e 1; Zdelta_e 0; Mdelta_e 0; 0 0; 0 0];
 
-% compute the gravitational forces here
+% Lateral Model
 
-fg_v=[0; 0; m*g];
-fg_b=fg_v*C_bv;
+A_latr=[Yv Yp Yr g*cos(theta0)*cos(phi0) 0;...
+    Lv Lp Lr 0 0;...
+    Nv Np Nr 0 0;...
+    0 1 cos(phi0)*tan(theta0) q0*cos(phi0)*tan(theta0)-r0*sin(phi0)*tan(theta0) 0;...
+    0 0 cos(phi0)*sec(theta0) p0*cos(phi0)*sec(theta0)-r0*sin(phi0)*sec(theta0) 0];
 
-% total forces and moments (body frame)
-
-f_total=fg_b+[fx; fy; fz]+fp;
-
-M_total=[l; m; n]+Mp;
+B_latr=[Ydelta_a Ydelta_r; Ldelta_a Ldelta_r; Ndelta_a Ndelta_r; 0 0; 0 0];
 
 % state derivatives
-
 % the full aircraft dynamics model is computed here
 
-%pdot = ;    % extra?
+x_dot_long=A_long*[u; w; q; theta; h]+B_long*[delta_e; delta_t];
+x_dot_latr=A_latr*[v; p; r; phi; psi]+B_latr*[delta_a; delta_r];
+
 pndot = (cos(theta)*cos(psi))*u+(sin(phi)*sin(theta)*cos(psi)-cos(phi)*sin(psi))*v+(cos(phi)*sin(theta)*cos(psi)+sin(phi)*sin(psi))*w;
 pedot = (cos(theta)*sin(psi))*u+(sin(phi)*sin(theta)*sin(psi)+cos(phi)*cos(psi))*v+(cos(phi)*sin(theta)*sin(psi)-sin(phi)*cos(psi))*w;
-pddot = -u*sin(theta)+v*sin(phi)*cos(theta)+w*cos(phi)*cos(theta);
+pddot = -x_dot_long(5,1);
 
-udot = r*v-q*w+(1/m)*f_total(1);
-vdot = p*w-r*u+(1/m)*f_total(2);
-wdot = q*u-p*v+(1/m)*f_total(3);
+udot = x_dot_long(1,1);
+vdot = x_dot_latr(1,1);
+wdot = x_dot_long(2,1);
 
-phidot = p+q*sin(phi)*tan(theta)+r*cos(phi)*tan(theta);
-thetadot = q*cos(phi)-r*sin(phi);
-psidot = q*sin(phi)*sec(theta)+r*cos(phi)*tan(theta);
+phidot = x_dot_latr(4,1);
+thetadot = x_dot_long(4,1);
+psidot = x_dot_latr(5,1);
 
-pdot = k1*p*q-k2*q*r+k3*l+k4*n;
-qdot = k5*p*r-k6*(p^2-r^2)+(1/Iyy)*m;
-rdot = k7*p*q-k1*q*r+k4*l+k8*n;
+pdot = x_dot_latr(2,1);
+qdot = x_dot_long(3,1);
+rdot = x_dot_latr(3,1);
 
 % map derivatives
 
-Euler_angle_rates=SB*[p;q;r];
-Earth_reference_velocities=C_EB*[u;v;w]
-
-block.Derivatives.Data(7)=Euler_angle_rates(1)
 block.Derivatives.Data(1) = pndot;
 block.Derivatives.Data(2) = pedot;
 block.Derivatives.Data(3) = pddot;
