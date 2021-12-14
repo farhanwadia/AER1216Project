@@ -1,4 +1,4 @@
-function aircraft_dynamics(block)
+function aircraft_dynamicsv2(block)
 %MSFUNTMPL_BASIC A Template for a Level-2 MATLAB S-Function
 %   The MATLAB S-function is written as a MATLAB function with the
 %   same name as the S-function. Replace 'msfuntmpl_basic' with the 
@@ -396,22 +396,22 @@ delta_t0=P.delta_t0;
 
 % States
 
-pn    = block.ContStates.Data(1);
-pe    = block.ContStates.Data(2);
-pd    = block.ContStates.Data(3);
-u     = block.ContStates.Data(4);
-v     = block.ContStates.Data(5);
-w     = block.ContStates.Data(6);
-phi   = block.ContStates.Data(7);
-theta = block.ContStates.Data(8);
-psi   = block.ContStates.Data(9);
-p     = block.ContStates.Data(10);
-q     = block.ContStates.Data(11);
-r     = block.ContStates.Data(12);
-delta_e = block.InputPort(1).Data(1)*pi/180 ; % converted inputs to radians
-delta_a = block.InputPort(1).Data(2)*pi/180 ; % converted inputs to radians
-delta_r = block.InputPort(1).Data(3)*pi/180 ; % converted inputs to radians
-delta_t = block.InputPort(1).Data(4);
+pn    = block.ContStates.Data(1)
+pe    = block.ContStates.Data(2)
+pd    = block.ContStates.Data(3)
+u     = block.ContStates.Data(4)
+v     = block.ContStates.Data(5)
+w     = block.ContStates.Data(6)
+phi   = block.ContStates.Data(7)
+theta = block.ContStates.Data(8)
+psi   = block.ContStates.Data(9)
+p     = block.ContStates.Data(10)
+q     = block.ContStates.Data(11)
+r     = block.ContStates.Data(12)
+delta_e = block.InputPort(1).Data(1)*pi/180  % converted inputs to radians
+delta_a = block.InputPort(1).Data(2)*pi/180  % converted inputs to radians
+delta_r = block.InputPort(1).Data(3)*pi/180  % converted inputs to radians
+delta_t = block.InputPort(1).Data(4)
 
 % Calculate air density
 

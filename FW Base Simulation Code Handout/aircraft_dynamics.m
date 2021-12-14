@@ -394,7 +394,7 @@ M=(1/2)*rho*Va^2*S*c*(Cm0+Cmalpha*alpha+Cmq*(c/(2*Va))*q+Cmdelta_e*delta_e);
 
 % Lateral aerodynamic forces and moments
 
-fy=(1/2)*rho*Va^2*S*(CY0+CYbeta*beta+CYp*(b/(2*Va))*p+CYr*(b/(2*Va))*r+CYdelta_a*delta_e+CYdelta_r*delta_r)
+fy=(1/2)*rho*Va^2*S*(CY0+CYbeta*beta+CYp*(b/(2*Va))*p+CYr*(b/(2*Va))*r+CYdelta_a*delta_e+CYdelta_r*delta_r);
 l=(1/2)*rho*Va^2*S*b*(Cl0+Clbeta*beta+Clp*(b/(2*Va))*p+Clr*(b/(2*Va))*r+Cldelta_a*delta_e+Cldelta_r*delta_r);
 n=(1/2)*rho*Va^2*S*b*(Cn0+Cnbeta*beta+Cnp*(b/(2*Va))*p+Cnr*(b/(2*Va))*r+Cndelta_a*delta_a+Cndelta_r*delta_r);
 
