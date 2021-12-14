@@ -33,8 +33,9 @@ E_b = num_cells * battery_voltage * (battery_life/1000) * 3600; % J
 eta_m = 0.75;
 eta_e = 0.85;
 
-t_e = (E_b * eta_m * eta_e)/P; % s
-sprintf('The flight endurance is %.2f s.', t_e)
+% below formula is incorrect
+% t_e = (E_b * eta_m * eta_e)/P; % s
+% sprintf('The flight endurance is %.2f s.', t_e)
 
 % Find max range
 V = 0:0.5:20;
@@ -53,7 +54,7 @@ for i = 1:length(V)
     a2 = V(i)^2;
     a1 = 0;
     a0 = -(W^2 + D(i)^2) / (2*rho*(4*pi/4)*diam^2)^2; % use area of the 4 props
-    
+
     v_all = roots([a4 a3 a2 a1 a0]);
     v(i) = v_all(real(v_all)>0 & imag(v_all)==0);
     
@@ -62,10 +63,31 @@ for i = 1:length(V)
     P_tot(i) = T(i) * (v(i) + V(i)*sin(alpha_D(i))); 
 end
 
+
+[min_P_tot, min_P_tot_idx] = min(P_tot);
+
+t_e = (E_b * eta_m * eta_e)/min_P_tot; % s
+sprintf('The flight endurance is %.2f s.', t_e)
+sprintf('The corresponding forward speed for max endurance is %.2f m/s', V(min_P_tot_idx))
+
 [min_P_tot_over_V, min_P_tot_over_V_idx] = min(P_tot ./ V);
 
 t_e_losses_for_max_range = (E_b * eta_m * eta_e) / P_tot(min_P_tot_over_V_idx);
 max_range = t_e_losses_for_max_range * V(min_P_tot_over_V_idx);
 
 sprintf('The flight range is %.2f m', max_range)
-sprintf('The corresponding forward speed is %.2f m/s', V(min_P_tot_over_V_idx))
+sprintf('The corresponding forward speed for max range is %.2f m/s', V(min_P_tot_over_V_idx))
+
+figure
+plot(V, P_tot,'b-o')
+title('Total Power vs. Velocity')
+xlabel('Velocity (m/s)')
+ylabel('Total Power (W)')
+grid on
+
+figure
+plot(V, P_tot ./ V,'b-o')
+title('Total Power / Velocity vs. Velocity')
+xlabel('Velocity (m/s)')
+ylabel('Total Power / Velocity (W / (m/s))')
+grid on

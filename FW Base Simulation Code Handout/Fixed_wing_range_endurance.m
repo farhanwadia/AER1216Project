@@ -18,6 +18,7 @@
 clc
 fprintf(' Code is initializing'); 
 parameters % get the data for the UAV
+RPM_values = [P.RPM_values(2), P.RPM_values(4), P.RPM_values(6)];
 
 % what info to show
 verbose_minP_T = false;
@@ -88,7 +89,7 @@ if verbose_graph
 end
 
 % build curves of best fit for the prop data
-Num_RPMS = length(P.RPM_values);
+Num_RPMS = length(RPM_values);
 syms J_variable CT_variable 'real'
 
 for i = 1:Num_RPMS
@@ -105,7 +106,7 @@ end
 % Setup initial guess curves
 
 init_guess_prop_data = 3;
-title_RPM = P.RPM_values(init_guess_prop_data);
+title_RPM = RPM_values(init_guess_prop_data);
 
 Init_CT_J_Curve = CT_J_Curve{init_guess_prop_data};
 Init_CT_J_Curve_f(J_variable) = CT_J_Curve_f{init_guess_prop_data};
@@ -206,7 +207,7 @@ for w = 1:Num_W
 
         for i = 1:Num_RPMS  
                         
-            diff_RPM_chart = abs(Prop_RPM_init - P.RPM_values(i));
+            diff_RPM_chart = abs(Prop_RPM_init - RPM_values(i));
             
             if diff_RPM_chart < min_diff_RPM 
                 min_diff_RPM = diff_RPM_chart;
