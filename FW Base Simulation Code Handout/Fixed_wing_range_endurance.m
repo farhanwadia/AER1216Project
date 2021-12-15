@@ -430,8 +430,24 @@ if verbose_graph
     legend('Max Range', 'Max Endurance')
     grid on
     
+        
+    figure
+    plot(Fuel_comsump_curve)
+    xlim([1 2800])
+    ylim([0 8])
+    hold on
+    plot(Data_fuel_Power,fuel_comsump_P, 'bo')
+    hold on
+    plot(avg_power_R,Fuel_comsump_curve(avg_power_R), 'ks')
+    hold on
+    plot(avg_power_E,Fuel_comsump_curve(avg_power_E), 'kd')
+    title('Fuel comsumption vs. Power output of the Engine')
+    xlabel('Engine Output Power (W)')
+    ylabel('Fuel comsumption (N/hr)')
+    legend('Fitted Curve', 'Provided Data', 'Avg Fuel Comsumption Range', 'Avg Fuel Comsumption Endurance')
+    grid on
 end
-
+    
 
 if verbose_minP_T
     
