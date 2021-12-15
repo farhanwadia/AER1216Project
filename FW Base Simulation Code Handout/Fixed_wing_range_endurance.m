@@ -4,11 +4,11 @@
 
 % This code calculates the max range and endurance for the UAV
 
-% For max range we find velocity to give the best fuel comsumption /
+% For max range we find velocity to give the best fuel consumption /
 % velocity.  This is done each time the weight of the plane changes.  
 % This is then integrated over the weight of the plane
 
-% For max endurance we find velocity to give the best fuel comsumption.
+% For max endurance we find velocity to give the best fuel consumption.
 % This is done each time the weight of the plane changes.  
 % This is then integrated over the weight of the plane
 
@@ -36,7 +36,7 @@ Fuel_density = (775.0 + 840.0) / 2; % density of Jet A-1 fuel (kg/m^3)
 % info about the engine fuel consumption
 Data_fuel_RPM = [1;4250;5000];
 Data_fuel_Power = [1;1340; 2240];
-fuel_comsump_P_kg= [0;0.48;0.78];
+fuel_consump_P_kg= [0;0.48;0.78];
 
 % step size to increment through the weight (in N), small is better but slower
 W_fuel_step = 1; % can use 1
@@ -71,19 +71,20 @@ Prop_diam = 2*Prop_R;
 
 % Build the curve for the Fuel consumption
 
-fuel_comsump_P = fuel_comsump_P_kg * P.gravity;
-Fuel_comsump_curve = fit(Data_fuel_Power,fuel_comsump_P,'poly1'); % use 'power1' for a exp^x fit
+fuel_consump_P = fuel_consump_P_kg * P.gravity;
+Fuel_consump_curve = fit(Data_fuel_Power,fuel_consump_P,'poly1'); % use 'power1' for a exp^x fit
 
 if verbose_graph
     figure
-    plot(Fuel_comsump_curve)
+    set(gcf, 'color', 'w')
+    plot(Fuel_consump_curve)
     xlim([1 2800])
     ylim([0 8])
     hold on
-    plot(Data_fuel_Power,fuel_comsump_P, 'bo')
-    title('Fuel comsumption vs. Power output of the Engine')
+    plot(Data_fuel_Power,fuel_consump_P, 'bo')
+    title('Fuel consumption vs. Power output of the Engine')
     xlabel('Engine Output Power (W)')
-    ylabel('Fuel comsumption (N/hr)')
+    ylabel('Fuel consumption (N/hr)')
     legend('Fitted Curve', 'Provided Data')
     grid on
 end
@@ -113,6 +114,7 @@ Init_CT_J_Curve_f(J_variable) = CT_J_Curve_f{init_guess_prop_data};
 
 if verbose_graph
     figure
+    set(gcf, 'color', 'w')
     plot(P.Props{init_guess_prop_data}(:,1), P.Props{init_guess_prop_data}(:,2),'bo')
     xlim([0 0.8])
     ylim([0 0.1])
@@ -129,6 +131,7 @@ Init_CP_J_Curve_f(J_variable) = CP_J_Curve_f{init_guess_prop_data};
 
 if verbose_graph
     figure
+    set(gcf, 'color', 'w')
     plot(P.Props{init_guess_prop_data}(:,1), P.Props{init_guess_prop_data}(:,3),'bo')
     xlim([0 1.0])
     ylim([0 0.035])
@@ -237,7 +240,7 @@ for w = 1:Num_W
         Prop_RPM(v) = Prop_RPM_temp;
         Prop_P(v) = P_temp;
 
-        Fuel_consump_V(v) = Fuel_comsump_curve(Prop_P(v));
+        Fuel_consump_V(v) = Fuel_consump_curve(Prop_P(v));
         Fuel_consump_perV_V(v) = Fuel_consump_V(v) / Velocities(v);
 
     end
@@ -285,6 +288,7 @@ for w = 1:Num_W
         
         % plot the curves at the inital weight
         figure
+        set(gcf, 'color', 'w')
         plot(Velocities, Prop_P,'b-o')
         title('Power Required vs. Velocity for initial weight')
         xlabel('Velocity (m/s)')
@@ -292,20 +296,23 @@ for w = 1:Num_W
         grid on
 
         figure
+        set(gcf, 'color', 'w')
         plot(Velocities, Fuel_consump_V,'b-o')
-        title('Fuel comsumption vs. Velocity for initial weight')
+        title('Fuel consumption vs. Velocity for initial weight')
         xlabel('Velocity (m/s)')
-        ylabel('Fuel comsumption (N/hr)')
+        ylabel('Fuel consumption (N/hr)')
         grid on
 
         figure
+        set(gcf, 'color', 'w')
         plot(Velocities, Fuel_consump_perV_V,'b-o')
-        title('Fuel comsumption over Velocity vs. Velocity for initial weight')
+        title('Fuel consumption over Velocity vs. Velocity for initial weight')
         xlabel('Velocity (m/s)')
-        ylabel('Fuel comsumption over Velocity (N/hr)/(m/s)')
+        ylabel('Fuel consumption over Velocity (N/hr)/(m/s)')
         grid on
 
         figure
+        set(gcf, 'color', 'w')
         plot(Velocities, Thrust_Req,'b-o')
         title('Thrust Required vs. Velocity for initial weight')
         xlabel('Velocity (m/s)')
@@ -313,6 +320,7 @@ for w = 1:Num_W
         grid on
 
         figure
+        set(gcf, 'color', 'w')
         plot(Velocities, Prop_RPM,'b-o')
         title('Propeller RPM vs. Velocity for initial weight')
         xlabel('Velocity (m/s)')
@@ -381,6 +389,7 @@ end
 if verbose_graph
     
     figure
+    set(gcf, 'color', 'w')
     plot(weight_temp, min_Fuel_consump_R,'r-o')
     hold on
     plot(weight_temp, min_Fuel_consump_E,'b-o')
@@ -391,6 +400,7 @@ if verbose_graph
     grid on
     
     figure
+    set(gcf, 'color', 'w')
     plot(weight_temp, min_Fuel_velocity_R,'r-o')
     hold on
     plot(weight_temp, min_Fuel_velocity_E,'b-o')
@@ -401,6 +411,7 @@ if verbose_graph
     grid on
     
     figure
+    set(gcf, 'color', 'w')
     plot(weight_temp, Power_R,'r-o')
     hold on
     plot(weight_temp, Power_E,'b-o')
@@ -411,6 +422,7 @@ if verbose_graph
     grid on
     
     figure
+    set(gcf, 'color', 'w')
     plot(weight_temp, Thrust_R,'r-o')
     hold on
     plot(weight_temp, Thrust_E,'b-o')
@@ -421,6 +433,7 @@ if verbose_graph
     grid on
     
     figure
+    set(gcf, 'color', 'w')
     plot(weight_temp, RPM_R,'r-o')
     hold on
     plot(weight_temp, RPM_E,'b-o')
@@ -430,8 +443,25 @@ if verbose_graph
     legend('Max Range', 'Max Endurance')
     grid on
     
+        
+    figure
+    set(gcf, 'color', 'w')
+    plot(Fuel_consump_curve)
+    xlim([1 2800])
+    ylim([0 8])
+    hold on
+    plot(Data_fuel_Power,fuel_consump_P, 'bo')
+    hold on
+    plot(avg_power_R,Fuel_consump_curve(avg_power_R), 'ks')
+    hold on
+    plot(avg_power_E,Fuel_consump_curve(avg_power_E), 'kd')
+    title('Fuel consumption vs. Power output of the Engine')
+    xlabel('Engine Output Power (W)')
+    ylabel('Fuel consumption (N/hr)')
+    legend('Fitted Curve', 'Provided Data', 'Avg Fuel consumption Range', 'Avg Fuel consumption Endurance')
+    grid on
 end
-
+    
 
 if verbose_minP_T
     
