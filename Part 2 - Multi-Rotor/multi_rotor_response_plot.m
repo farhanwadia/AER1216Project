@@ -12,7 +12,7 @@ z_ref = positions.signals.values(:, 6);
 t = positions.time;
 
 figure(1);
-set(gcf,'color','none');
+set(gcf,'color','w');
 hold on
 
 plot(t, x_ref, '--', 'LineWidth', 2)
@@ -27,5 +27,3 @@ xlabel('Time (s)')
 ylabel('Position (m)')
 legend('X Input', 'X Response', 'Y Input', 'Y Response', 'Z Input', 'Z Response')
 title('Multi-Rotor sUAS Position Response')
-
-
