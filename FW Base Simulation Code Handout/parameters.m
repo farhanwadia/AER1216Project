@@ -27,7 +27,7 @@
 
 %% Parameter Computation
 % Initial Conditions
-clear all
+%clear all
 % compute trim conditions            
 P.Va0 = 15;         % initial airspeed (also used as trim airspeed)
 P.Va_trim = 15; 

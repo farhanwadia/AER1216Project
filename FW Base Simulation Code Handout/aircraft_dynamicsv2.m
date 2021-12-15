@@ -1,4 +1,4 @@
-function aircraft_dynamics(block)
+function aircraft_dynamicsv2(block)
 %MSFUNTMPL_BASIC A Template for a Level-2 MATLAB S-Function
 %   The MATLAB S-function is written as a MATLAB function with the
 %   same name as the S-function. Replace 'msfuntmpl_basic' with the 
@@ -40,7 +40,7 @@ function aircraft_dynamics(block)
 % q                 pitch rate [rad/s]
 % r                 yaw rate [rad/s]
 %
-% Last updated: Pravin Wedage 2021-11-09
+% Last updated: Shahzeb Mahmood 2021-12-12
 
 %% TA NOTE
 % The code segements you must modify are located in the derivatives
@@ -254,48 +254,21 @@ end
 function Derivatives(block)
 
 % Rename parameters
+
 P = block.DialogPrm(1).Data; % must duplicate this line in each function
 
-pn0=P.pn0;
-pe0=P.pe0;
-pd0=P.pd0;
-u0=P.u0;
-v0=P.v0;
-w0=P.w0;
-phi0=P.phi0;
-theta0=P.theta0;
-psi0=P.psi0;
-p0=P.p0;
-q0=P.q0;
-r0=P.r0;
-delta_e0=P.delta_e0;
-delta_a0=P.delta_a0;
-delta_r0=P.delta_r0;
-delta_t0=P.delta_t0;
 
-% General Data
+% Aerosonde UAV Data
 
 Va0=P.Va0;
 g=P.g;
-rho=1.225;
+rho0=1.225;
+
 beta0=0;
-alpha0=0;        
+alpha0=0;
+
 Prop_R = sqrt(P.Sprop/pi);
 Prop_diam = 2*Prop_R;
-m=P.m;
-Ixx=P.Ixx;
-Iyy=P.Iyy;
-Izz=P.Izz;
-Ixz=P.Ixz;
-S=P.S;
-b=P.b;
-c=P.c;
-Sprop=P.Sprop;
-e=P.e;
-Omega_max=P.OmegaMax_RPM; % rad/s
-FuelCapacity=P.Fuel_Cap_L; % L
-
-% Compute CL and CD
 
 Fuel_density = (775.0 + 840.0) / 2; % density of Jet A-1 fuel (kg/m^3)
 %https://code7700.com/fuel_density.htm
@@ -308,9 +281,26 @@ Weight = (P.m * P.gravity) + W_fuel_half;
 AR = P.b/P.c;
 K = 1 / (pi*P.e*AR);
 
-dyn_pressure = (1/2)*rho*(Va0)^2;
+% Trim conditions and general data
+
+dyn_pressure = (1/2)*rho0*(Va0)^2;
 CL = Weight / (dyn_pressure*P.S);
 CD = P.C_Do + K*CL^2;
+
+% physical parameters of airframe
+
+m=P.m;
+Ixx=P.Ixx;
+Iyy=P.Iyy;
+Izz=P.Izz;
+Ixz=P.Ixz;
+S=P.S;
+b=P.b;
+c=P.c;
+Sprop=P.Sprop;
+e=P.e;
+Omega_max=P.OmegaMax_RPM; % rad/s
+FuelCapacity=P.Fuel_Cap_L; % L
 
 % Longitudinal
 
@@ -350,17 +340,18 @@ Cldelta_r=P.C_ldelta_r;
 Cndelta_r=P.C_ndelta_r;
 
 % compute inertial constants
-K = ;
-k1 = ;
-k2 = ;
-k3 = ;
-k4 = ;
-k5 = ;
-k6 = ;
-k7 = ;
-k8 = ;
 
-% Additional Coefficients
+K = Ixx*Izz-Ixz^2;
+k1 = Ixz*(Ixx-Iyy+Izz)/K;
+k2 = (Izz*(Izz-Iyy)+Ixz^2)/K;
+k3 = Izz/K;
+k4 = Ixz/K;
+k5 = (Izz-Ixx)/Iyy;
+k6 = Ixz/Iyy;
+k7 = ((Ixx-Iyy)*Ixx+Ixz^2)/K;
+k8 = Ixx/K;
+
+% aerodynamic coefficients
 
 Cp0=k3*Cl0+k4*Cn0;
 Cpbeta=k3*Clbeta+k4*Cnbeta;
@@ -375,16 +366,126 @@ Crr=k4*Clr+k8*Cnr;
 Crdelta_a=k4*Cldelta_a+k8*Cndelta_a;
 Crdelta_r=k4*Cldelta_r+k8*Cndelta_r;
 
-CX0=-CD0*cos(alpha0)+CL*sin(alpha0);
-CXalpha=0;  % ???
+CX0=-CD*cos(alpha0)+CL*sin(alpha0);
+CXalpha=CX0;  % ???
 CXq=-CDq*cos(alpha0)+Clq*sin(alpha0);
 CXdelta_e=-CDdelta_e*cos(alpha0)+Cldelta_e*sin(alpha0);
-CZ0=-CD0*sin(alpha0)-CL*cos(alpha0);
-CZalpha=0; % ???
+CZ0=-CD*sin(alpha0)-CL*cos(alpha0);
+CZalpha=CZ0; % ???
 CZq=-CDq*sin(alpha0)-Clq*cos(alpha0);
 CZdelta_e=-CDdelta_e*sin(alpha0)-Cldelta_e*cos(alpha0);
-        
-% Longitudinal Aerodynamic Derivatives
+
+% Initial Conditions
+
+pn0=P.pn0;
+pe0=P.pe0;
+pd0=P.pd0;
+u0=P.u0;
+v0=P.v0;
+w0=P.w0;
+phi0=P.phi0;
+theta0=P.theta0;
+psi0=P.psi0;
+p0=P.p0;
+q0=P.q0;
+r0=P.r0;
+delta_e0=P.delta_e0;
+delta_a0=P.delta_a0;
+delta_r0=P.delta_r0;
+delta_t0=P.delta_t0;
+
+% States
+
+pn    = block.ContStates.Data(1)
+pe    = block.ContStates.Data(2)
+pd    = block.ContStates.Data(3)
+u     = block.ContStates.Data(4)
+v     = block.ContStates.Data(5)
+w     = block.ContStates.Data(6)
+phi   = block.ContStates.Data(7)
+theta = block.ContStates.Data(8)
+psi   = block.ContStates.Data(9)
+p     = block.ContStates.Data(10)
+q     = block.ContStates.Data(11)
+r     = block.ContStates.Data(12)
+delta_e = block.InputPort(1).Data(1)*pi/180  % converted inputs to radians
+delta_a = block.InputPort(1).Data(2)*pi/180  % converted inputs to radians
+delta_r = block.InputPort(1).Data(3)*pi/180  % converted inputs to radians
+delta_t = block.InputPort(1).Data(4)
+
+% Calculate air density
+
+h=-pd;
+Va = sqrt(u^2+v^2+w^2);
+alpha = atan(w/u);
+beta = asin(v/Va);
+Velocities=Va;
+
+if h < 11000
+    % Use this if below 11km (in the troposphere)
+    Temperature = 15.04 - .00649 * h;
+    Pressure = 101.29 * [(Temperature + 273.1)/288.08]^5.256;       
+else
+    % Use this if between 11km and 25km (entering lower stratosphere)
+    Temperature = -56.46;
+    Pressure = 22.65 * exp(1.73 - .000157 * Temperature);
+end
+
+% propulsion forces and moments
+
+rho = Pressure / (0.2869 * (Temperature + 273.1));
+
+Fuel_density = (775.0 + 840.0) / 2; % density of Jet A-1 fuel (kg/m^3)
+%https://code7700.com/fuel_density.htm
+
+Fuel_L = P.Fuel_Cap_L /2 ; % amount of fuel in L -> half a tank
+W_fuel_half = (Fuel_L/1000)*Fuel_density*P.gravity; % weight of gas in N
+
+Weight = (P.m * P.gravity) + W_fuel_half;
+
+syms J_variable CT_variable 'real'
+
+CT_J_Curve = fit(P.Props{3}(:,1), P.Props{3}(:,2),'poly2');
+CT_J_Curve_f(J_variable) = CT_J_Curve.p1*(J_variable)^2 + CT_J_Curve.p2*(J_variable) + CT_J_Curve.p3;
+
+CP_J_Curve = fit(P.Props{3}(:,1), P.Props{3}(:,3),'exp2');
+CP_J_Curve_f(J_variable) = CP_J_Curve.a*exp(CP_J_Curve.b*J_variable) + CP_J_Curve.c*exp(CP_J_Curve.d*J_variable);
+
+AR = P.b/P.c;
+K = 1 / (pi*P.e*AR);
+
+dyn_pressure2 = (1/2)*rho*(Velocities)^2;
+CL = Weight / (dyn_pressure2*P.S);
+CD = P.C_Do + K*CL^2;
+Thrust_Req = Weight / (CL / CD);
+
+eqn1 = [CT_variable == CT_J_Curve_f(J_variable)];
+eqn2 = [CT_variable == Thrust_Req / (rho * (Velocities / (Prop_diam * (J_variable)))^2 * Prop_diam^4)];
+eqns = [eqn1(1) eqn2(1)];
+vars = [CT_variable J_variable]; 
+
+[Init_Ct_temp Init_J_temp] = vpasolve(eqns,vars,[0.05; 0.5]);
+Init_J = double(max(Init_J_temp));
+
+Rev_sec = Velocities / (Prop_diam * Init_J);
+RPM = Rev_sec*60; 
+
+CT=Init_Ct_temp(1);
+CP = CP_J_Curve_f(Init_J);
+Power = CP * rho*Rev_sec^3*Prop_diam^5;
+Power = double(Power);
+
+% compute the propulsion forces and moments here
+
+fp=CT*rho*Rev_sec^2*Prop_diam^4;
+
+CQ=CP/(2*pi);
+Mp=CQ*rho*Rev_sec^2*Prop_diam^5;
+
+% aerodynamic forces and moments
+% compute the aerodynamic forces and moments here
+
+% Longitudinal aerodynamic forces and moments
 
 Xu=(u0*rho*S)/m*(CX0+CXalpha*alpha0+CXdelta_e*delta_e0)-(rho*S*w0*CXalpha)/(2*m)+(rho*S*c*CXq*u0*q0)/(4*m*Va0)-(rho*Sprop*u0)/m;
 Xw=-q0+(w0*rho*S)/m*(CX0+CXalpha*alpha0+CXdelta_e*delta_e0)+(rho*S*c*CXq*w0*q0)/(4*m*Va0)+(rho*S*CXalpha*u0)/(2*m)-(rho*Sprop*w0)/m;
@@ -402,7 +503,7 @@ Mw=(w0*rho*S*c)/Iyy*(Cm0+Cmalpha*alpha0+Cmdelta_e*delta_e0)+(rho*S*c*Cmalpha*u0)
 Mq=(rho*Va0*S*c^2*Cmq)/(4*Iyy);
 Mdelta_e=(rho*Va0*2*S*c*Cmdelta_e)/(2*Iyy);
 
-% Lateral Aerodynamic Derivatives
+% Lateral aerodynamic forces and moments
 
 Yv=(rho*S*b*v0)/(4*m*Va0)*(CYp*p0+CYr*r0)+(rho*S*v0)/m*(CY0+CYbeta*beta0+CYdelta_a*delta_a0+CYdelta_r*delta_r0)+(rho*S*CYbeta)/(2*m)*sqrt(u0^2+w0^2);
 Yp=w0+(rho*Va0*S*b)/(4*m)*CYp;
@@ -432,7 +533,6 @@ A_long=[Xu Xw Xq -g*cos(theta0) 0;...
 
 B_long=[Xdelta_e 1; Zdelta_e 0; Mdelta_e 0; 0 0; 0 0];
 
-
 % Lateral Model
 
 A_latr=[Yv Yp Yr g*cos(theta0)*cos(phi0) 0;...
@@ -443,27 +543,8 @@ A_latr=[Yv Yp Yr g*cos(theta0)*cos(phi0) 0;...
 
 B_latr=[Ydelta_a Ydelta_r; Ldelta_a Ldelta_r; Ndelta_a Ndelta_r; 0 0; 0 0];
 
-% Inputs and States
-
-pn    = block.ContStates.Data(1);
-pe    = block.ContStates.Data(2);
-pd    = block.ContStates.Data(3);
-u     = block.ContStates.Data(4);
-v     = block.ContStates.Data(5);
-w     = block.ContStates.Data(6);
-phi   = block.ContStates.Data(7);
-theta = block.ContStates.Data(8);
-psi   = block.ContStates.Data(9);
-p     = block.ContStates.Data(10);
-q     = block.ContStates.Data(11);
-r     = block.ContStates.Data(12);
-delta_e = block.InputPort(1).Data(1)*pi/180;  % converted inputs to radians
-delta_a = block.InputPort(1).Data(2)*pi/180;  % converted inputs to radians
-delta_r = block.InputPort(1).Data(3)*pi/180;  % converted inputs to radians
-delta_t = block.InputPort(1).Data(4);
-h=-pd;
-
-% Full dynamics model
+% state derivatives
+% the full aircraft dynamics model is computed here
 
 x_dot_long=A_long*[u; w; q; theta; h]+B_long*[delta_e; delta_t];
 x_dot_latr=A_latr*[v; p; r; phi; psi]+B_latr*[delta_a; delta_r];
@@ -483,6 +564,8 @@ psidot = x_dot_latr(5,1);
 pdot = x_dot_latr(2,1);
 qdot = x_dot_long(3,1);
 rdot = x_dot_latr(3,1);
+
+% map derivatives
 
 block.Derivatives.Data(1) = pndot;
 block.Derivatives.Data(2) = pedot;
