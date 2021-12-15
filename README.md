@@ -8,7 +8,7 @@ Shahzeb Mahmood
 David Rolko
 
 
-## Fixed-Wing Drone Development
+## Fixed-Wing sUAS Development
 
 ## Multi-Rotor Drone Development
 In the `Part 2 - Multi-Rotor` folder, the range and endurance calculations can be found in the `Part2_Q1.mlx` file.
