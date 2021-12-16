@@ -8,9 +8,11 @@ Shahzeb Mahmood
 David Rolko
 
 ## Fixed-Wing sUAS Development
-In the [Part 1 - Fixed-Wing](Part%201%20-%20Fixed-Wing) folder, open and run the `FW_control_design.mlx` file. 
+In the [Part 1 - Fixed-Wing](Part%201%20-%20Fixed-Wing) folder, open and run the `Fixed_Wing_Range_Endurance.m` file to view the analysis and plots for range and endurance.
 
-After, open the `Fixed_Wing_Aircraft_Sim_ssv2.mdl` file in Simulink and run it for the simulation. 
+For the other parts of the analysis and simulation, first open and run the `FW_control_design.mlx` file. 
+
+After doing that, open the `Fixed_Wing_Aircraft_Sim_ssv2.mdl` file in Simulink and run it for the simulation. 
 
 ## Multi-Rotor Drone Development
 In the [Part 2 - Multi-Rotor](Part%202%20-%20Multi-Rotor) folder, the range and endurance calculations can be found in the `Part2_Q1.mlx` file.
