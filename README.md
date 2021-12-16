@@ -12,7 +12,7 @@ In the [Part 1 - Fixed-Wing](Part%201%20-%20Fixed-Wing) folder, open and run the
 
 For the other parts of the analysis and simulation, first open and run the `FW_control_design.mlx` file. 
 
-After doing that, open the `Fixed_Wing_Aircraft_Sim_ssv2.mdl` file in Simulink and run it for the simulation. 
+After doing that, open the `Fixed_Wing_Aircraft_Sim_ssv2.slx` file in Simulink and run it for the simulation. 
 
 ## Multi-Rotor Drone Development
 In the [Part 2 - Multi-Rotor](Part%202%20-%20Multi-Rotor) folder, the range and endurance calculations can be found in the `Part2_Q1.mlx` file.
